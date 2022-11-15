@@ -16,12 +16,12 @@ const MessageLevel = Object.freeze({
 /** The representation class for the viewer, based on Three.js WebGL renderer. */
 export class DxfViewer {
 
-    /** @param domContainer Container element to create the canvas in. Usually empty div. Should not
+    /** @param scene    ThreeJS scene
      *  have padding if auto-resize feature is used.
      * @param options Some options can be overridden if specified. See DxfViewer.DefaultOptions.
      */
-    constructor(domContainer, options = null) {
-        this.domContainer = domContainer
+    constructor(scene, options = null) {
+        //this.domContainer = domContainer
         this.options = Object.create(DxfViewer.DefaultOptions)
         if (options) {
             Object.assign(this.options, options)
@@ -30,62 +30,62 @@ export class DxfViewer {
 
         this.clearColor = this.options.clearColor.getHex()
 
-        this.scene = new three.Scene()
+        this.scene = scene;
 
-        try {
-            this.renderer = new three.WebGLRenderer({
-                alpha: options.canvasAlpha,
-                premultipliedAlpha: options.canvasPremultipliedAlpha,
-                antialias: options.antialias,
-                depth: false
-            })
-        } catch (e) {
-            console.log("Failed to create renderer: " + e)
-            this.renderer = null
-            return
-        }
-        const renderer = this.renderer
-        renderer.setPixelRatio(window.devicePixelRatio)
+        // try {
+        //     this.renderer = new three.WebGLRenderer({
+        //         alpha: options.canvasAlpha,
+        //         premultipliedAlpha: options.canvasPremultipliedAlpha,
+        //         antialias: options.antialias,
+        //         depth: false
+        //     })
+        // } catch (e) {
+        //     console.log("Failed to create renderer: " + e)
+        //     this.renderer = null
+        //     return
+        // }
+        // const renderer = this.renderer
+        // renderer.setPixelRatio(window.devicePixelRatio)
 
-        const camera = this.camera = new three.OrthographicCamera(-1, 1, 1, -1, 0.1, 2);
-        camera.position.z = 1
-        camera.position.x = 0
-        camera.position.y = 0
+        // const camera = this.camera = new three.OrthographicCamera(-1, 1, 1, -1, 0.1, 2);
+        // camera.position.z = 1
+        // camera.position.x = 0
+        // camera.position.y = 0
 
-        this.simpleColorMaterial = []
-        this.simplePointMaterial = []
-        for (let i = 0; i < InstanceType.MAX; i++) {
-            this.simpleColorMaterial[i] = this._CreateSimpleColorMaterial(i)
-            this.simplePointMaterial[i] = this._CreateSimplePointMaterial(i)
-        }
+        // this.simpleColorMaterial = []
+        // this.simplePointMaterial = []
+        // for (let i = 0; i < InstanceType.MAX; i++) {
+        //     this.simpleColorMaterial[i] = this._CreateSimpleColorMaterial(i)
+        //     this.simplePointMaterial[i] = this._CreateSimplePointMaterial(i)
+        // }
 
-        renderer.setClearColor(options.clearColor, options.clearAlpha)
+        // renderer.setClearColor(options.clearColor, options.clearAlpha)
 
-        if (options.autoResize) {
-            this.canvasWidth = domContainer.clientWidth
-            this.canvasHeight = domContainer.clientHeight
-            domContainer.style.position = "relative"
-        } else {
-            this.canvasWidth = options.canvasWidth
-            this.canvasHeight = options.canvasHeight
-            this.resizeObserver = null
-        }
-        renderer.setSize(this.canvasWidth, this.canvasHeight)
+        // if (options.autoResize) {
+        //     this.canvasWidth = domContainer.clientWidth
+        //     this.canvasHeight = domContainer.clientHeight
+        //     domContainer.style.position = "relative"
+        // } else {
+        //     this.canvasWidth = options.canvasWidth
+        //     this.canvasHeight = options.canvasHeight
+        //     this.resizeObserver = null
+        // }
+        // renderer.setSize(this.canvasWidth, this.canvasHeight)
 
-        this.canvas = renderer.domElement
-        this.canvas.getContext("webgl", { premultipliedAlpha: false })
-        domContainer.style.display = "block"
-        if (options.autoResize) {
-            this.canvas.style.position = "absolute"
-            this.resizeObserver = new ResizeObserver(entries => this._OnResize(entries[0]))
-            this.resizeObserver.observe(domContainer)
-        }
-        domContainer.appendChild(this.canvas)
+        // this.canvas = renderer.domElement
+        // this.canvas.getContext("webgl", { premultipliedAlpha: false })
+        // domContainer.style.display = "block"
+        // if (options.autoResize) {
+        //     this.canvas.style.position = "absolute"
+        //     this.resizeObserver = new ResizeObserver(entries => this._OnResize(entries[0]))
+        //     this.resizeObserver.observe(domContainer)
+        // }
+        // domContainer.appendChild(this.canvas)
 
-        this.canvas.addEventListener("pointerdown", this._OnPointerEvent.bind(this))
-        this.canvas.addEventListener("pointerup", this._OnPointerEvent.bind(this))
+        // this.canvas.addEventListener("pointerdown", this._OnPointerEvent.bind(this))
+        // this.canvas.addEventListener("pointerup", this._OnPointerEvent.bind(this))
 
-        this.Render()
+        //this.Render()
 
         /* Indexed by MaterialKey, value is {key, material}. */
         this.materials = new RBTree((m1, m2) => m1.key.Compare(m2.key))
@@ -156,9 +156,9 @@ export class DxfViewer {
             throw new Error("`url` parameter is not specified")
         }
 
-        this._EnsureRenderer()
+        //this._EnsureRenderer()
 
-        this.Clear()
+        //this.Clear()
 
         this.worker = new DxfWorker(workerFactory ? workerFactory() : null)
         const scene = await this.worker.Load(url, fonts, this.options, progressCbk)
